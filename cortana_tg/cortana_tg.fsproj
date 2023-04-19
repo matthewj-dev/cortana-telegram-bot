@@ -9,6 +9,7 @@
         <Content Include="appsettings.json"/>
         <Compile Include="Core.fs"/>
         <Compile Include="Commands\Test.fs"/>
+        <Compile Include="Commands\BingChat.fs"/>
         <Compile Include="Commands\Core.fs"/>
         <Compile Include="Program.fs"/>
     </ItemGroup>

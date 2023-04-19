@@ -1,7 +1,9 @@
 module cortana_tg.Core
 
+open System
 open Funogram.Types
 open Funogram.Api
+open BingChat
 
 let processResultWithValue (result: Result<'a, ApiResponseError>) =
     match result with
@@ -16,3 +18,7 @@ let botResult config data =
     api config data |> Async.RunSynchronously
 
 let bot config data = botResult config data |> processResult
+
+let bingClient: BingChatClient =
+    BingChatClientOptions(Cookie = Environment.GetEnvironmentVariable "BingToken")
+    |> BingChatClient
