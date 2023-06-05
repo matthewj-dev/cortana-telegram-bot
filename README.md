@@ -15,4 +15,4 @@ I decided to really Microsoft-ify this project.
 
 ## Concluding Thoughts
 
-
+... (Will update when project reaches MVP)
