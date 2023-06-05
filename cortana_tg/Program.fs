@@ -13,5 +13,5 @@ let main _ =
         return! startBot config Commands.Core.updateArrived None
     }
     |> Async.RunSynchronously
-
+    
     0
