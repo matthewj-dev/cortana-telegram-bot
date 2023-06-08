@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Core.fs" />
+        <Compile Include="Commands\BingChat.fs" />
+        <Compile Include="Commands\Core.fs" />
+        <Compile Include="Program.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="BingChat" Version="0.8.0" />
+      <PackageReference Include="Funogram" Version="2.0.7" />
+      <PackageReference Include="Funogram.Telegram" Version="6.7.0" />
+    </ItemGroup>
+
+</Project>

@@ -1,10 +1,20 @@
-module cortana_tg.Commands.Core
+﻿module CortanaTelegramBot.Commands.Core
 
 open Funogram.Telegram
 open Funogram.Telegram.Types
 open Funogram.Telegram.Bot
-open cortana_tg.Core
+open CortanaTelegramBot.Core
 
+let testGetChatInfo (ctx: UpdateContext) config chatId =
+    let msg = ctx.Update.Message.Value
+    let result = botResult config (Api.getChat msg.Chat.Id)
+
+    match result with
+    | Ok x ->
+        botResult config (Api.sendMessage msg.Chat.Id $"Id: %i{x.Id}, Type: {x.Type}")
+        |> processResultWithValue
+        |> ignore
+    | Error e -> printf $"Error: %s{e.Description}"
 
 let defaultText =
     """🚹🤖Available commands:
@@ -20,7 +30,7 @@ let updateArrived (ctx: UpdateContext) =
         processCommands
             ctx
             [| cmdScan "/ask_bing %s" (fun text _ -> BingChat.askBing ctx ctx.Config (fromId ()) text)
-               cmd "/get_chat_info" (fun _ -> Test.testGetChatInfo ctx |> wrap) |]
+               cmd "/get_chat_info" (fun _ -> testGetChatInfo ctx |> wrap) |]
 
     if result then
         Api.sendMessage (fromId ()) defaultText |> bot ctx.Config

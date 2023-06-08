@@ -1,4 +1,4 @@
-module cortana_tg.Core
+﻿module CortanaTelegramBot.Core
 
 open System
 open Funogram.Types
