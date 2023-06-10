@@ -32,12 +32,13 @@ let defaultText =
 
 let updateArrived (ctx: UpdateContext) =
     let chatId = ctx.Update.Message.Value.Chat.Id
+    let userId = ctx.Update.Message.Value.From.Value.Id
     let messageId = ctx.Update.Message.Value.MessageId
 
     let result =
         processCommands
             ctx
-            [| cmdScan "/ask %s" (fun text _ -> BingChat.askBing ctx.Config chatId messageId text)
+            [| cmdScan "/ask %s" (fun text _ -> BingChat.askBing ctx.Config chatId userId messageId text)
                cmd "/get_chat_info" (fun _ -> getChatInfo ctx.Config chatId messageId) |]
 
     if result then

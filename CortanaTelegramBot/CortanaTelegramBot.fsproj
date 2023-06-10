@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <Compile Include="Core.fs" />
+        <Compile Include="BingConvoMemCache.fs" />
         <Compile Include="Commands\BingChat.fs" />
         <Compile Include="Commands\Core.fs" />
         <Compile Include="Program.fs" />
