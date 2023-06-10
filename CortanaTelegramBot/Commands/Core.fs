@@ -1,20 +1,29 @@
 ﻿module CortanaTelegramBot.Commands.Core
 
+open Funogram.Types
 open Funogram.Telegram
 open Funogram.Telegram.Types
 open Funogram.Telegram.Bot
 open CortanaTelegramBot.Core
 
-let testGetChatInfo (ctx: UpdateContext) config chatId =
-    let msg = ctx.Update.Message.Value
-    let result = botResult config (Api.getChat msg.Chat.Id)
+let getChatInfo (config: BotConfig) (chatId: int64): unit =
+    let result = botResult config (Api.getChat chatId)
 
     match result with
     | Ok x ->
-        botResult config (Api.sendMessage msg.Chat.Id $"Id: %i{x.Id}, Type: {x.Type}")
-        |> processResultWithValue
-        |> ignore
+        let message = match x.Username with
+                      | None -> match x.Title with
+                                | None -> $"Id: %i{x.Id}, Type: {x.Type}"
+                                | Some title -> $"Title: {title}, Id: %i{x.Id}, Type: {x.Type}"
+                      | Some username -> $"Current User: {username}, Id: %i{x.Id}, Type: {x.Type}"
+                      
+        botResult config (Api.sendMessage chatId message)
+                        |> processResultWithValue
+                        |> ignore
+                        
     | Error e -> printf $"Error: %s{e.Description}"
+    
+    
 
 let defaultText =
     """🚹🤖Available commands:
@@ -29,10 +38,10 @@ let updateArrived (ctx: UpdateContext) =
     let result =
         processCommands
             ctx
-            [| cmdScan "/ask_bing %s" (fun text _ -> BingChat.askBing ctx ctx.Config (fromId ()) text)
-               cmd "/get_chat_info" (fun _ -> testGetChatInfo ctx |> wrap) |]
+            [| cmdScan "/ask_bing %s" (fun text _ -> BingChat.askBing ctx.Config chatId text)
+               cmd "/get_chat_info" (fun _ -> getChatInfo ctx.Config chatId) |]
 
     if result then
-        Api.sendMessage (fromId ()) defaultText |> bot ctx.Config
+        Api.sendMessage chatId defaultText |> bot ctx.Config
     else
         ()
