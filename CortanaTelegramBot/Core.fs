@@ -32,8 +32,8 @@ let processResult (result: Result<'a, ApiResponseError>) = processResultWithValu
 let sendToTelegram config data =
     let result = api config data |> Async.RunSynchronously
     match result with
-    | Ok resultValue -> logger LogLevel.Information "Response sent"
     | Error errorValue -> logger LogLevel.Error $"Response NOT sent {errorValue.ErrorCode}|{errorValue.Description}"
+    | _ -> ()   // do nothing when success
     
     result
 

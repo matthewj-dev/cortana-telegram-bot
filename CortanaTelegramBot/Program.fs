@@ -12,12 +12,10 @@ open Microsoft.FSharp.Core
 [<EntryPoint>]
 let main _ =
     
-    
-    
     while true do
         async {
             try
-                let config = Config.withReadTokenFromEnv "TelegramBotToken" Config.defaultConfig 
+                let config = Config.withReadTokenFromEnv "Cortana_TelegramBotToken" Config.defaultConfig 
                 let! _ = Api.deleteWebhookBase () |> api config
                 return! startBot config updateArrived None
             with e ->
