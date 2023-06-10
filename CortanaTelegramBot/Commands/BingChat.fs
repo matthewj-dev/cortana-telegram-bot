@@ -1,6 +1,7 @@
 ﻿module CortanaTelegramBot.Commands.BingChat
 
 open System
+open System.Diagnostics
 open System.Threading.Tasks
 open Funogram
 open Funogram.Telegram
@@ -12,7 +13,6 @@ open Microsoft.Extensions.Logging
 open Microsoft.FSharp.Control
 
 let askBing (config: BotConfig) (chatId: int64) (inputId: int64) (input: string): unit =
-    
     logger LogLevel.Information $"Processing /ask on BingChat from chatID: {chatId} with input: \n{input}"
     
     let resultMessageHuh = botResult config (Api.sendMessageReply chatId "⌛ Hold on, let me think about it." inputId)
@@ -24,18 +24,25 @@ let askBing (config: BotConfig) (chatId: int64) (inputId: int64) (input: string)
                                     
     task {
         try
-            let resultTask = bingClient.AskAsync input
+            let! conversation = bingClient.CreateConversation()
+            let resultTask = conversation.AskAsync input
             
-            let mutable times = 0
+            logger LogLevel.Information "Awaiting response from BingChat"
+            
+            let stopwatch = Stopwatch()
+            stopwatch.Start()
+            let mutable times: int = 0
             let mutable currentMessageText: string = resultMessage.Text.Value
             while resultTask.Status <> TaskStatus.RanToCompletion do
-                 if times > 20 then failwith "BingChat took to long!"
+                 if stopwatch.Elapsed > TimeSpan.FromSeconds 60 then
+                    failwith "BingChat took to long!"
+                 
+                 1. |> TimeSpan.FromSeconds |> waitFun
+                 
                  currentMessageText <- currentMessageText + "."
-                 logger LogLevel.Information "Awaiting response from BingChat"
-                 500. |> TimeSpan.FromMilliseconds |> waitFun
                  botResult config (Req.EditMessageText.Make(text = currentMessageText, chatId = ChatId.Int(resultMessage.Chat.Id), messageId = resultMessage.MessageId))
                  |> processResult
-                 times = times + 1 |> ignore
+                 times <- times + 1
             
             logger LogLevel.Information "BingChat has been asked"
         
