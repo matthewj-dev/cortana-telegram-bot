@@ -6,7 +6,7 @@ open Funogram.Telegram.Types
 open Funogram.Telegram.Bot
 open CortanaTelegramBot.Core
 
-let getChatInfo (config: BotConfig) (chatId: int64): unit =
+let getChatInfo (config: BotConfig) (chatId: int64) (messageId: int64): unit =
     let result = botResult config (Api.getChat chatId)
 
     match result with
@@ -17,7 +17,7 @@ let getChatInfo (config: BotConfig) (chatId: int64): unit =
                                 | Some title -> $"Title: {title}, Id: %i{x.Id}, Type: {x.Type}"
                       | Some username -> $"Current User: {username}, Id: %i{x.Id}, Type: {x.Type}"
                       
-        botResult config (Api.sendMessage chatId message)
+        botResult config (Api.sendMessageReply chatId message messageId)
                         |> processResultWithValue
                         |> ignore
                         
@@ -27,17 +27,18 @@ let getChatInfo (config: BotConfig) (chatId: int64): unit =
 
 let defaultText =
     """🚹🤖Available commands:
-  /ask_bing {Question} - Sends a single question to Bing.
+  /ask {Question} - Sends a single question to Bing.
   /get_chat_info - Returns id and type of current chat"""
 
 let updateArrived (ctx: UpdateContext) =
     let chatId = ctx.Update.Message.Value.Chat.Id
+    let messageId = ctx.Update.Message.Value.MessageId
 
     let result =
         processCommands
             ctx
-            [| cmdScan "/ask_bing %s" (fun text _ -> BingChat.askBing ctx.Config chatId text)
-               cmd "/get_chat_info" (fun _ -> getChatInfo ctx.Config chatId) |]
+            [| cmdScan "/ask %s" (fun text _ -> BingChat.askBing ctx.Config chatId messageId text)
+               cmd "/get_chat_info" (fun _ -> getChatInfo ctx.Config chatId messageId) |]
 
     if result then
         Api.sendMessage chatId defaultText |> bot ctx.Config

@@ -23,8 +23,8 @@ let botResult config data =
 let bot config data = botResult config data |> processResult
 
 let bingClient: BingChatClient =
-    BingChatClientOptions(Cookie = Environment.GetEnvironmentVariable "BingToken")
-    |> BingChatClient
+    BingChatClientOptions(Tone = BingChatTone.Creative)
+        |> BingChatClient
 
 // useful for handing the entire application a top-level logging functions, no need for function passing.
 let logger, exLogger as createCortanaLog: (LogLevel -> string -> unit) * (LogLevel -> string -> Exception -> unit) =
@@ -37,3 +37,10 @@ let logger, exLogger as createCortanaLog: (LogLevel -> string -> unit) * (LogLev
     let cortanaLogEx (level: LogLevel) (message: string) (ex: Exception): unit =
         elogf logger level ex "%s{message}" message
     cortanaLog, cortanaLogEx
+    
+let waitFun (time: TimeSpan) =
+    let timer = new Timers.Timer(time)
+    let event = Async.AwaitEvent (timer.Elapsed) |> Async.Ignore
+    timer.Start()
+    
+    Async.RunSynchronously event

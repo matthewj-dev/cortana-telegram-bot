@@ -12,9 +12,7 @@ open Microsoft.FSharp.Core
 [<EntryPoint>]
 let main _ =
     
-    let timer = new Timers.Timer(5000.)
-    let event = Async.AwaitEvent (timer.Elapsed) |> Async.Ignore
-    timer.Start()
+    
     
     while true do
         async {
@@ -27,5 +25,5 @@ let main _ =
         }
         |> Async.RunSynchronously
         
-        Async.RunSynchronously event
+        5. |> TimeSpan.FromSeconds |> waitFun
     0
