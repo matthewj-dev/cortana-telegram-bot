@@ -31,9 +31,7 @@ let defaultText =
   /get_chat_info - Returns id and type of current chat"""
 
 let updateArrived (ctx: UpdateContext) =
-    let fromId () = ctx.Update.Message.Value.From.Value.Id
-
-    let wrap fn = fn ctx.Config (fromId ())
+    let chatId = ctx.Update.Message.Value.Chat.Id
 
     let result =
         processCommands
