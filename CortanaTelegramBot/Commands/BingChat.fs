@@ -15,7 +15,7 @@ open Microsoft.FSharp.Control
 let askBing (config: BotConfig) (chatId: int64) (inputId: int64) (input: string): unit =
     logger LogLevel.Information $"Processing /ask on BingChat from chatID: {chatId} with input: \n{input}"
     
-    let resultMessageHuh = botResult config (Api.sendMessageReply chatId "⌛ Hold on, let me think about it." inputId)
+    let resultMessageHuh = sendToTelegram config (Api.sendMessageReply chatId "⌛ Hold on, let me think about it." inputId)
                            |> processResultWithValue
     
     let resultMessage: Message = match resultMessageHuh with
@@ -40,7 +40,7 @@ let askBing (config: BotConfig) (chatId: int64) (inputId: int64) (input: string)
                  1. |> TimeSpan.FromSeconds |> waitFun
                  
                  currentMessageText <- currentMessageText + "."
-                 botResult config (Req.EditMessageText.Make(text = currentMessageText, chatId = ChatId.Int(resultMessage.Chat.Id), messageId = resultMessage.MessageId))
+                 sendToTelegram config (Req.EditMessageText.Make(text = currentMessageText, chatId = ChatId.Int(resultMessage.Chat.Id), messageId = resultMessage.MessageId))
                  |> processResult
                  times <- times + 1
             
@@ -50,11 +50,11 @@ let askBing (config: BotConfig) (chatId: int64) (inputId: int64) (input: string)
         
             logger LogLevel.Information "The Bing has spoken!"
         
-            botResult config (Api.sendMessage chatId result)
+            sendToTelegram config (Api.sendMessage chatId result)
             |> processResult
         with e ->
             exLogger LogLevel.Error $"Error asking BingChat {input}" e
-            botResult config (Api.sendMessage chatId $"{e.Message} ⚠️")
+            sendToTelegram config (Api.sendMessage chatId $"{e.Message} ⚠️")
             |> processResultWithValue
             |> ignore
     } |> ignore

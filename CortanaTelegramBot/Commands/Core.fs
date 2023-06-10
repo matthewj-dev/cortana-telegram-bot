@@ -7,7 +7,7 @@ open Funogram.Telegram.Bot
 open CortanaTelegramBot.Core
 
 let getChatInfo (config: BotConfig) (chatId: int64) (messageId: int64): unit =
-    let result = botResult config (Api.getChat chatId)
+    let result = sendToTelegram config (Api.getChat chatId)
 
     match result with
     | Ok x ->
@@ -17,7 +17,7 @@ let getChatInfo (config: BotConfig) (chatId: int64) (messageId: int64): unit =
                                 | Some title -> $"Title: {title}, Id: %i{x.Id}, Type: {x.Type}"
                       | Some username -> $"Current User: {username}, Id: %i{x.Id}, Type: {x.Type}"
                       
-        botResult config (Api.sendMessageReply chatId message messageId)
+        sendToTelegram config (Api.sendMessageReply chatId message messageId)
                         |> processResultWithValue
                         |> ignore
                         
