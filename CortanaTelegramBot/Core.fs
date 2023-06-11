@@ -15,9 +15,11 @@ let logger, exLogger as createCortanaLog: (LogLevel -> string -> unit) * (LogLev
             .Create(fun builder ->
                 builder
                     .AddConsole()
-                    .SetMinimumLevel(LogLevel.Information)
+                    .SetMinimumLevel(LogLevel.Debug)
                     .AddDebug()
                     .SetMinimumLevel(LogLevel.Debug)
+                    .AddFile("Logs/log.txt")
+                    .SetMinimumLevel(LogLevel.Information)
                 |> ignore)
             .CreateLogger()
 
