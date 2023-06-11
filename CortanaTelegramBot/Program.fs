@@ -21,7 +21,7 @@ let main _ =
                 let! _ = Api.deleteWebhookBase () |> api config
                 return! startBot config updateArrived None
             with e ->
-                exLogger LogLevel.Error "Error asking BingChat {input}" e
+                exLogger LogLevel.Error "Unhandled Error" e
         }
         |> Async.RunSynchronously
 

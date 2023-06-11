@@ -5,6 +5,7 @@ open Funogram.Telegram
 open Funogram.Telegram.Types
 open Funogram.Telegram.Bot
 open CortanaTelegramBot.Core
+open Microsoft.Extensions.Logging
 
 let getChatInfo (config: BotConfig) (chatId: int64) (messageId: int64) : unit =
     let result = sendToTelegram config (Api.getChat chatId)
@@ -23,7 +24,7 @@ let getChatInfo (config: BotConfig) (chatId: int64) (messageId: int64) : unit =
         |> processResultWithValue
         |> ignore
 
-    | Error e -> printf $"Error: %s{e.Description}"
+    | Error e -> logger LogLevel.Error $"Error: %s{e.Description}"
 
 
 
