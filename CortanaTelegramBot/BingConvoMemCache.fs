@@ -44,6 +44,11 @@ type BingConvoMemCache() =
                   convo = convo
                   expirationEpochMs = DateTimeOffset.Now.AddMinutes(10).ToUnixTimeMilliseconds() }
 
-            cache <- cache |> Array.append (Array.singleton newTelegramToBingConvo))
+            cache <- match cache |> Array.length > 99 with
+                     | true -> cache |> Array.removeAt 0
+                     | false -> cache
+            
+            cache <- Array.append cache (Array.singleton newTelegramToBingConvo)
+        )
 
 let topLevelCache = BingConvoMemCache()
