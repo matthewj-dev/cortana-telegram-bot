@@ -10,14 +10,22 @@ open BingChat
 
 // useful for handing the entire application a top-level logging functions, no need for function passing.
 let logger, exLogger as createCortanaLog: (LogLevel -> string -> unit) * (LogLevel -> string -> Exception -> unit) =
-    let logger = LoggerFactory.Create(fun builder -> builder
-                                                         .AddConsole().SetMinimumLevel(LogLevel.Information)
-                                                         .AddDebug().SetMinimumLevel(LogLevel.Debug) |> ignore)
-                                                         .CreateLogger()
-    let cortanaLog (level: LogLevel) (message: string): unit =
-        logf logger level "%s{message}" message
-    let cortanaLogEx (level: LogLevel) (message: string) (ex: Exception): unit =
+    let logger =
+        LoggerFactory
+            .Create(fun builder ->
+                builder
+                    .AddConsole()
+                    .SetMinimumLevel(LogLevel.Information)
+                    .AddDebug()
+                    .SetMinimumLevel(LogLevel.Debug)
+                |> ignore)
+            .CreateLogger()
+
+    let cortanaLog (level: LogLevel) (message: string) : unit = logf logger level "%s{message}" message
+
+    let cortanaLogEx (level: LogLevel) (message: string) (ex: Exception) : unit =
         elogf logger level ex "%s{message}" message
+
     cortanaLog, cortanaLogEx
 
 let processResultWithValue (result: Result<'a, ApiResponseError>) =
@@ -30,22 +38,14 @@ let processResultWithValue (result: Result<'a, ApiResponseError>) =
 let processResult (result: Result<'a, ApiResponseError>) = processResultWithValue result |> ignore
 
 let sendToTelegram config data =
-    let result = api config data |> Async.RunSynchronously
-    match result with
-    | Error errorValue -> logger LogLevel.Error $"Response NOT sent {errorValue.ErrorCode}|{errorValue.Description}"
-    | _ -> ()   // do nothing when success
-    
-    result
-
-let bot config data = sendToTelegram config data |> processResult
+    api config data |> Async.RunSynchronously
 
 let bingClient: BingChatClient =
-    BingChatClientOptions(Tone = BingChatTone.Creative)
-        |> BingChatClient
-    
+    BingChatClientOptions(Tone = BingChatTone.Creative) |> BingChatClient
+
 let waitFun (time: TimeSpan) =
     let timer = new Timers.Timer(time)
-    let event = Async.AwaitEvent (timer.Elapsed) |> Async.Ignore
+    let event = Async.AwaitEvent(timer.Elapsed) |> Async.Ignore
     timer.Start()
-    
+
     Async.RunSynchronously event

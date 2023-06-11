@@ -6,24 +6,26 @@ open Funogram.Telegram.Types
 open Funogram.Telegram.Bot
 open CortanaTelegramBot.Core
 
-let getChatInfo (config: BotConfig) (chatId: int64) (messageId: int64): unit =
+let getChatInfo (config: BotConfig) (chatId: int64) (messageId: int64) : unit =
     let result = sendToTelegram config (Api.getChat chatId)
 
     match result with
     | Ok x ->
-        let message = match x.Username with
-                      | None -> match x.Title with
-                                | None -> $"Id: %i{x.Id}, Type: {x.Type}"
-                                | Some title -> $"Title: {title}, Id: %i{x.Id}, Type: {x.Type}"
-                      | Some username -> $"Current User: {username}, Id: %i{x.Id}, Type: {x.Type}"
-                      
+        let message =
+            match x.Username with
+            | None ->
+                match x.Title with
+                | None -> $"Id: %i{x.Id}, Type: {x.Type}"
+                | Some title -> $"Title: {title}, Id: %i{x.Id}, Type: {x.Type}"
+            | Some username -> $"Current User: {username}, Id: %i{x.Id}, Type: {x.Type}"
+
         sendToTelegram config (Api.sendMessageReply chatId message messageId)
-                        |> processResultWithValue
-                        |> ignore
-                        
+        |> processResultWithValue
+        |> ignore
+
     | Error e -> printf $"Error: %s{e.Description}"
-    
-    
+
+
 
 let defaultText =
     """🚹🤖Available commands:
@@ -42,6 +44,6 @@ let updateArrived (ctx: UpdateContext) =
                cmd "/get_chat_info" (fun _ -> getChatInfo ctx.Config chatId messageId) |]
 
     if result then
-        Api.sendMessage chatId defaultText |> bot ctx.Config
+        Api.sendMessage chatId defaultText |> sendToTelegram ctx.Config |> ignore
     else
         ()
