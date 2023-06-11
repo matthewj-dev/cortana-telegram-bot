@@ -12,7 +12,7 @@ open Microsoft.FSharp.Core
 [<EntryPoint>]
 let main _ =
 
-    while true do   // TODO make into a service worker
+    while true do // TODO make into a service worker
         async {
             try
                 let config =

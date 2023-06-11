@@ -26,7 +26,9 @@ let askBing (config: BotConfig) (chatId: int64) (userId: int64) (inputId: int64)
             match resultMessageHuh with
             | None -> failwith "No message returned from sending message"
             | Some value -> value
-            
+
+        0.5 |> TimeSpan.FromSeconds |> waitFun
+        
         sendToTelegram
             config
             (Req.EditMessageText.Make(
@@ -90,7 +92,7 @@ let askBing (config: BotConfig) (chatId: int64) (userId: int64) (inputId: int64)
             sendToTelegram
                 config
                 (Req.EditMessageText.Make(
-                    text = "result",
+                    text = result,
                     chatId = ChatId.Int(resultMessage.Chat.Id),
                     messageId = resultMessage.MessageId
                 ))
@@ -101,7 +103,7 @@ let askBing (config: BotConfig) (chatId: int64) (userId: int64) (inputId: int64)
             sendToTelegram
                 config
                 (Req.EditMessageText.Make(
-                    text = "💀",
+                    text = "❌",
                     chatId = ChatId.Int(resultMessage.Chat.Id),
                     messageId = resultMessage.MessageId
                 ))
@@ -115,5 +117,5 @@ let askBing (config: BotConfig) (chatId: int64) (userId: int64) (inputId: int64)
             |> processResult
     }
     |> ignore
-    
+
     topLevelCache <- funLocalCache
