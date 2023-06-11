@@ -19,23 +19,31 @@ let askBing (config: BotConfig) (chatId: int64) (userId: int64) (inputId: int64)
 
     task {
         let resultMessageHuh =
-            sendToTelegram config (Api.sendMessageReply chatId "⏳ Hold on, let me think about it." inputId)
+            sendToTelegram config (Api.sendMessageReply chatId "⏳" inputId)
             |> processResultWithValue
 
         let resultMessage: Message =
             match resultMessageHuh with
             | None -> failwith "No message returned from sending message"
             | Some value -> value
+            
+        sendToTelegram
+            config
+            (Req.EditMessageText.Make(
+                text = "⏳ Hold on, let me think about it.",
+                chatId = ChatId.Int(resultMessage.Chat.Id),
+                messageId = resultMessage.MessageId
+            ))
+        |> processResult
 
         try
-
 
             let! conversation =
                 match funLocalCache.GetConvo chatId userId with
                 | None -> bingClient.CreateConversation()
                 | Some value -> Task.Run(fun _ -> value)
 
-            funLocalCache.AddConvo conversation chatId userId |> ignore
+            funLocalCache.AddConvo conversation chatId userId
             let resultTask = conversation.AskAsync input
 
             logger LogLevel.Information "Awaiting response from BingChat"
@@ -68,8 +76,6 @@ let askBing (config: BotConfig) (chatId: int64) (userId: int64) (inputId: int64)
 
             logger LogLevel.Information "The Bing has spoken!"
 
-            sendToTelegram config (Api.sendMessage chatId result) |> processResult
-
             sendToTelegram
                 config
                 (Req.EditMessageText.Make(
@@ -79,11 +85,15 @@ let askBing (config: BotConfig) (chatId: int64) (userId: int64) (inputId: int64)
                 ))
             |> processResult
 
-            1. |> TimeSpan.FromSeconds |> waitFun
+            0.5 |> TimeSpan.FromSeconds |> waitFun
 
             sendToTelegram
                 config
-                (Req.DeleteMessage.Make(chatId = ChatId.Int(resultMessage.Chat.Id), messageId = resultMessage.MessageId))
+                (Req.EditMessageText.Make(
+                    text = "result",
+                    chatId = ChatId.Int(resultMessage.Chat.Id),
+                    messageId = resultMessage.MessageId
+                ))
             |> processResult
         with e ->
             exLogger LogLevel.Error $"Error asking BingChat {input}" e
@@ -103,9 +113,7 @@ let askBing (config: BotConfig) (chatId: int64) (userId: int64) (inputId: int64)
                 config
                 (Req.DeleteMessage.Make(chatId = ChatId.Int(resultMessage.Chat.Id), messageId = resultMessage.MessageId))
             |> processResult
-
-            sendToTelegram config (Api.sendMessage chatId $"{e.Message} ⚠️")
-            |> processResultWithValue
-            |> ignore
     }
     |> ignore
+    
+    topLevelCache <- funLocalCache
