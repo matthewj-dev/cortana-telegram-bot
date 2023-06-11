@@ -88,6 +88,17 @@ let askBing (config: BotConfig) (chatId: int64) (userId: int64) (inputId: int64)
             |> processResult
 
             0.5 |> TimeSpan.FromSeconds |> waitFun
+            
+            sendToTelegram
+                config
+                (Req.EditMessageText.Make(
+                    text = "✅",
+                    chatId = ChatId.Int(resultMessage.Chat.Id),
+                    messageId = resultMessage.MessageId
+                ))
+            |> processResult
+
+            0.25 |> TimeSpan.FromSeconds |> waitFun
 
             sendToTelegram
                 config
