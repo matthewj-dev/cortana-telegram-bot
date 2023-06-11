@@ -51,4 +51,4 @@ type BingConvoMemCache() =
             cache <- Array.append cache (Array.singleton newTelegramToBingConvo)
         )
 
-let topLevelCache = BingConvoMemCache()
+let mutable topLevelCache = BingConvoMemCache()
