@@ -54,10 +54,10 @@ let askBing (config: BotConfig) (chatId: int64) (userId: int64) (inputId: int64)
             let mutable currentMessageText: string = resultMessage.Text.Value
 
             while resultTask.Status <> TaskStatus.RanToCompletion do
-                if times > 60 then
+                if times > 6 then
                     failwith "BingChat took to long!"
 
-                1. |> TimeSpan.FromSeconds |> waitFun
+                10. |> TimeSpan.FromSeconds |> waitFun
 
                 currentMessageText <- currentMessageText + "."
 
@@ -97,8 +97,6 @@ let askBing (config: BotConfig) (chatId: int64) (userId: int64) (inputId: int64)
                     messageId = resultMessage.MessageId
                 ))
             |> processResult
-
-            0.25 |> TimeSpan.FromSeconds |> waitFun
 
             sendToTelegram
                 config

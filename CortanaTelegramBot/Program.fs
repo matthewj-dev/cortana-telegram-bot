@@ -1,10 +1,7 @@
 ﻿module CortanaTelegramBot.Program
 
 open System
-open Funogram.Api
-open Funogram.Telegram
 open Funogram.Telegram.Bot
-open CortanaTelegramBot.Commands.Core
 open CortanaTelegramBot.Core
 open Microsoft.Extensions.Logging
 open Microsoft.FSharp.Core
@@ -16,8 +13,7 @@ let main _ =
         async {
             try
                 let config =
-                    Config.withReadTokenFromEnv "Cortana_TelegramBotToken" Config.defaultConfig
-
+    Config.defaultConfig |> Config.withReadTokenFromEnv "Cortana_TelegramBotToken"
                 let! _ = Api.deleteWebhookBase () |> api config
                 return! startBot config updateArrived None
             with e ->
