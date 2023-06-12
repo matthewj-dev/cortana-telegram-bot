@@ -17,7 +17,10 @@ type BingConvoMemCache() =
         lock cacheSync (fun () ->
             let telegramToBingConvo =
                 cache
-                |> Array.tryFind (fun (v: TelegramToBingConvo) -> v.chatId = chatId && v.userId = userId)
+                |> Array.tryFind (fun (v: TelegramToBingConvo) ->
+                                       v.expirationEpochMs > DateTimeOffset.Now.ToUnixTimeMilliseconds()
+                                    && v.chatId = chatId
+                                    && v.userId = userId)
 
             match telegramToBingConvo with
             | None -> None
@@ -42,7 +45,7 @@ type BingConvoMemCache() =
                 { chatId = chatId
                   userId = userId
                   convo = convo
-                  expirationEpochMs = DateTimeOffset.Now.AddMinutes(10).ToUnixTimeMilliseconds() }
+                  expirationEpochMs = DateTimeOffset.Now.AddMinutes(60).ToUnixTimeMilliseconds() }
 
             cache <-
                 match cache |> Array.length > 99 with
