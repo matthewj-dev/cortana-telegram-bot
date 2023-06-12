@@ -11,7 +11,7 @@ type TelegramToBingConvo =
 
 type BingConvoMemCache() =
     let mutable cache: TelegramToBingConvo[] = Array.empty<TelegramToBingConvo>
-    let cacheSync = new Object()    // should convert this into Async.Seq
+    let cacheSync = new Object()
 
     member this.GetConvo chatId userId : Option<BingChatConversation> =
         lock cacheSync (fun () ->
@@ -24,7 +24,24 @@ type BingConvoMemCache() =
 
             match telegramToBingConvo with
             | None -> None
-            | Some value -> value.convo |> Some)
+            | Some value -> value.convo |> Some
+        )
+        
+    member this.RemoveConvo chatId userId: unit =
+        lock cacheSync (fun () ->
+            let telegramToBingConvoIndex =
+                cache
+                |> Array.tryFindIndex (fun (v: TelegramToBingConvo) ->
+                                           v.chatId = chatId
+                                        && v.userId = userId)
+            let cacheWithout = match telegramToBingConvoIndex with
+                               | None -> None
+                               | Some indexToRemove ->cache |> Array.removeAt indexToRemove |> Some
+            if cacheWithout.IsSome then
+                cache <- cacheWithout.Value
+            else
+                ()
+        )
 
     member this.AddConvo convo chatId userId : unit =
         lock cacheSync (fun () ->
@@ -52,6 +69,7 @@ type BingConvoMemCache() =
                 | true -> cache |> Array.removeAt 0
                 | false -> cache
 
-            cache <- Array.append cache (Array.singleton newTelegramToBingConvo))
+            cache <- Array.append cache (Array.singleton newTelegramToBingConvo)
+        )
 
 let mutable topLevelCache = BingConvoMemCache()
