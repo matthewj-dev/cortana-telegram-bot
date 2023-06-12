@@ -35,17 +35,17 @@ let defaultText =
 
 let updateArrived (ctx: UpdateContext) =
     if ctx.Update.Message.IsNone then
-    ()
+        ()
 
-let message = ctx.Update.Message.Value
+    let message = ctx.Update.Message.Value
 
-let chatId = message.Chat.Id
-let userId = message.From.Value.Id
-let messageId = message.MessageId
+    let chatId = message.Chat.Id
+    let userId = message.From.Value.Id
+    let messageId = message.MessageId
 
-processCommands
-    ctx
-    [| cmdScan "/ask %s" (fun text _ -> BingChat.askBing ctx.Config chatId userId messageId text)
-       cmd "/chat_info" (fun _ -> getChatInfo ctx.Config chatId messageId)
-       cmd "/help" (fun _ -> Api.sendMessage chatId defaultText |> sendToTelegram ctx.Config |> ignore) |]
-|> ignore
+    processCommands
+        ctx
+        [| cmdScan "/ask %s" (fun text _ -> BingChat.askBing ctx.Config chatId userId messageId text)
+           cmd "/chat_info" (fun _ -> getChatInfo ctx.Config chatId messageId)
+           cmd "/help" (fun _ -> Api.sendMessage chatId defaultText |> sendToTelegram ctx.Config |> ignore) |]
+    |> ignore
