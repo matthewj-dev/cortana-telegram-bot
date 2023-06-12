@@ -15,7 +15,7 @@ open Microsoft.FSharp.Control
 let askBing (config: BotConfig) (chatId: int64) (userId: int64) (inputId: int64) (input: string) : unit =
     logger LogLevel.Information $"Processing /ask on BingChat from chatID: {chatId} with input: \n{input}"
 
-    let funLocalCache = topLevelCache // capture cache instance to prevent deadlocks TODO make the cache use AsyncSeq
+    let funLocalCache = topLevelCache
 
     task {
         let resultMessageHuh =
@@ -26,20 +26,8 @@ let askBing (config: BotConfig) (chatId: int64) (userId: int64) (inputId: int64)
             match resultMessageHuh with
             | None -> failwith "No message returned from sending message"
             | Some value -> value
-
-        0.5 |> TimeSpan.FromSeconds |> waitFun
         
-        sendToTelegram
-            config
-            (Req.EditMessageText.Make(
-                text = "⏳ Hold on, let me think about it.",
-                chatId = ChatId.Int(resultMessage.Chat.Id),
-                messageId = resultMessage.MessageId
-            ))
-        |> processResult
-
         try
-
             let! conversation =
                 match funLocalCache.GetConvo chatId userId with
                 | None -> bingClient.CreateConversation()
@@ -49,30 +37,15 @@ let askBing (config: BotConfig) (chatId: int64) (userId: int64) (inputId: int64)
             let resultTask = conversation.AskAsync input
 
             logger LogLevel.Information "Awaiting response from BingChat"
-
-            let mutable times: int = 0
-            let mutable currentMessageText: string = resultMessage.Text.Value
-
-            while resultTask.Status <> TaskStatus.RanToCompletion do
-                if times > 6 then
-                    failwith "BingChat took to long!"
-
-                10. |> TimeSpan.FromSeconds |> waitFun
-
-                currentMessageText <- currentMessageText + "."
-
-                sendToTelegram
-                    config
-                    (Req.EditMessageText.Make(
-                        text = currentMessageText,
-                        chatId = ChatId.Int(resultMessage.Chat.Id),
-                        messageId = resultMessage.MessageId
-                    ))
-                |> processResult
-
-                times <- times + 1
-
-            logger LogLevel.Information "BingChat has been asked"
+            
+            sendToTelegram
+                config
+                (Req.EditMessageText.Make(
+                    text = "⏳ Hold on, let me think about it...",
+                    chatId = ChatId.Int(resultMessage.Chat.Id),
+                    messageId = resultMessage.MessageId
+                ))
+            |> processResult
 
             let! result = resultTask
 
