@@ -50,6 +50,9 @@ let askBing (config: BotConfig) (chatId: int64) (userId: int64) (inputId: int64)
             let! result = resultTask
 
             logger LogLevel.Information "The Bing has spoken!"
+            
+            if result.Trim().ToLowerInvariant().Contains "<disengaged>" then
+                funLocalCache.RemoveConvo chatId userId
 
             sendToTelegram
                 config
