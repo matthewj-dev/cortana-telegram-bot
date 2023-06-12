@@ -31,20 +31,21 @@ let getChatInfo (config: BotConfig) (chatId: int64) (messageId: int64) : unit =
 let defaultText =
     """🚹🤖Available commands:
   /ask {Question} - Sends a single question to Bing.
-  /get_chat_info - Returns id and type of current chat"""
+  /chat_info - Returns id and type of current chat"""
 
 let updateArrived (ctx: UpdateContext) =
-    let chatId = ctx.Update.Message.Value.Chat.Id
-    let userId = ctx.Update.Message.Value.From.Value.Id
-    let messageId = ctx.Update.Message.Value.MessageId
+    if ctx.Update.Message.IsNone then
+    ()
 
-    let result =
-        processCommands
-            ctx
-            [| cmdScan "/ask %s" (fun text _ -> BingChat.askBing ctx.Config chatId userId messageId text)
-               cmd "/get_chat_info" (fun _ -> getChatInfo ctx.Config chatId messageId) |]
+let message = ctx.Update.Message.Value
 
-    if result then
-        Api.sendMessage chatId defaultText |> sendToTelegram ctx.Config |> ignore
-    else
-        ()
+let chatId = message.Chat.Id
+let userId = message.From.Value.Id
+let messageId = message.MessageId
+
+processCommands
+    ctx
+    [| cmdScan "/ask %s" (fun text _ -> BingChat.askBing ctx.Config chatId userId messageId text)
+       cmd "/chat_info" (fun _ -> getChatInfo ctx.Config chatId messageId)
+       cmd "/help" (fun _ -> Api.sendMessage chatId defaultText |> sendToTelegram ctx.Config |> ignore) |]
+|> ignore
